@@ -6,18 +6,36 @@ import FormControl from '@mui/material/FormControl';
 import FormLabel from '@mui/material/FormLabel';
 
 import TextField from '@mui/material/TextField';
-import { Input } from '@mui/material';
+import { Button, Input } from '@mui/material';
 
 import styles from './homePage.module.css';
-import Canvas from "../components/Canvas";
 
-const HomePage = () => {
+const HomePage = ({setSrc}) => {
     const [value, setValue] = useState('url');
-    const [image, setImage] = useState();
+    const [image, setImage] = useState()
 
     const handleChange = (event) => {
         setValue(event.target.value);
     };
+
+    const loadImage = () => {
+        if (image){
+            if (typeof image !== 'string'){
+                if (image.type.includes('image')){
+                    var reader  = new FileReader();
+                    // it's onload event and you forgot (parameters)
+                    reader.onload = function(e)  {
+                        setSrc(e.target.result)
+                        console.log(e.target.result)
+                    }
+                    // you have to declare the file loading
+                    reader.readAsDataURL(image);
+                }
+            } else {
+                setSrc(image)
+            }
+        }
+    }
 
     return (
         <div className={styles.HomePage}>
@@ -32,11 +50,10 @@ const HomePage = () => {
                     <FormControlLabel value="url" control={<Radio />} label="Ввести URL" />
                     {value === 'url' &&  <TextField id="filled-basic" label="Filled" variant="filled" onChange={(e) => setImage(e.target.value)}/>}
                     <FormControlLabel value="file" control={<Radio />} label="Прикрепить картику" />
-                    {value === 'file' && <Input type="file" onChange={(e) => setImage(e.target.value)}/>}
+                    {value === 'file' && <Input type="file" onChange={(e) => setImage(e.target.files[0])}/>}
                 </RadioGroup>
+                <Button variant="outlined" onClick={loadImage}>Загрузить</Button>
             </FormControl>
-            <p>{value}</p>
-            <Canvas />
         </div>
     );
 }
