@@ -1,3 +1,7 @@
 .HomePage {
     margin: 30vh 40vw;
 }
+
+.error {
+    color: red;
+}

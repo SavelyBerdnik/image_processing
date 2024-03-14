@@ -13,6 +13,7 @@ import styles from './homePage.module.css';
 const HomePage = ({setSrc}) => {
     const [value, setValue] = useState('url');
     const [image, setImage] = useState()
+    const [error, setError] = useState()
 
     const handleChange = (event) => {
         setValue(event.target.value);
@@ -20,19 +21,38 @@ const HomePage = ({setSrc}) => {
 
     const loadImage = () => {
         if (image){
-            if (typeof image !== 'string'){
+            if (value === 'file'){
                 if (image.type.includes('image')){
                     var reader  = new FileReader();
                     // it's onload event and you forgot (parameters)
                     reader.onload = function(e)  {
-                        setSrc(e.target.result)
-                        console.log(e.target.result)
+                        let blob = new Blob([new Uint8Array(e.target.result)], { type: image.type })
+                        setSrc(blob)
+                        console.log(blob)
                     }
                     // you have to declare the file loading
-                    reader.readAsDataURL(image);
+                    reader.readAsArrayBuffer(image);
+                    setError()
+                }
+                else {
+                    setError('Выберите другой файл')
                 }
             } else {
-                setSrc(image)
+                console.log(image)
+                fetch(image)
+                    .then(response => {
+                        if (response.ok){
+                            let contentType = response.headers.get("Content-Type")
+                            if (contentType && contentType.startsWith("image/")){
+                                return response.blob()
+                            } else {
+                                throw new Error('Not an image')
+                            }
+                        } else {
+                            throw new Error("Cloud not load image")
+                        }
+                    })
+                    .then(blob => setSrc(blob))
             }
         }
     }
@@ -52,6 +72,7 @@ const HomePage = ({setSrc}) => {
                     <FormControlLabel value="file" control={<Radio />} label="Прикрепить картику" />
                     {value === 'file' && <Input type="file" onChange={(e) => setImage(e.target.files[0])}/>}
                 </RadioGroup>
+                <p className={styles.error}>{ error }</p>
                 <Button variant="outlined" onClick={loadImage}>Загрузить</Button>
             </FormControl>
         </div>
