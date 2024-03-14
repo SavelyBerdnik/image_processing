@@ -44,15 +44,17 @@ const HomePage = ({setSrc}) => {
                         if (response.ok){
                             let contentType = response.headers.get("Content-Type")
                             if (contentType && contentType.startsWith("image/")){
+                                setError()
                                 return response.blob()
                             } else {
-                                throw new Error('Not an image')
+                                setError('Поэтой ссылке нет изображения')
                             }
                         } else {
-                            throw new Error("Cloud not load image")
+                            setError('Выберите другую ссылку')
                         }
                     })
                     .then(blob => setSrc(blob))
+                    .catch(e => setError('Выберите другую ссылку'))
             }
         }
     }
